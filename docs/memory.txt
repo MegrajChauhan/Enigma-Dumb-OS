@@ -1,0 +1,10 @@
+In Enigma, just like it's previous version, this version will also have the same memory format.
+The memory will be an array of bytes. The size will be pre-defined and can be increased by the user program
+as requested. The memory addresses will have a fixed way of addressing defined unlike the older version.
+
+The memory addresses will be 32 bits long instead of 64 bits long. The first byte will be a header telling
+the memory how many bytes that address represents and the remaining 3 bytes will actually be the address.
+
+Every program will start with 1 MB or 1024 bytes of memory. Than according to the needs of the user's 
+program, the memory will expand. There will be a limit to how much you can increase the memory size.
+The OS itself will stop us.
