@@ -23,25 +23,16 @@ SOFTWARE.
 #ifndef E_MEMORY
 #define E_MEMORY
 
-#include <cstdint>
-#include <memory.h>
 #include <cstdlib>
+#include <memory.h>
 #include <unistd.h>
 #include <iostream>
 #include <cmath>
 
 #include "../utils/Esignals.hpp"
-
-typedef std::uint8_t byte;
-typedef std::uint16_t word;
-typedef std::uint32_t dword;
-typedef std::uint64_t qword;
+#include "../utils/EnigmaTypedefs.hpp"
 
 #define MEM_START_SIZE 1024 // the memory starts with 1MB for each program, this is by default
-
-/*
-What we first need is a manager of the memory itself.
-*/
 
 class Memory
 {

@@ -31,6 +31,14 @@ enum Signal
     MEM_INVALID_SIZE, //it was requested to access number of bytes other than 1, 2, 4 and 8.
     MEM_ADDRESS_OUT_OF_BOUNDS, //data was requested from a memory address but the address is out of bounds
     MEM_SBRK_FAILED, //the OS was requested to increase the current memory pool but the request was rejected
+
+    LOADER_INVALID_BIN_FILE,
+    LOADER_FILE_NOT_EXISTS,
+    LOADER_FILE_A_DIRECTORY,
+
+    LOADER_FILE_FORMAT_INVALID, //the file is not decimal, binary or hexadecimal
+    LOADER_LOADED_FILE_FORMAT_INVALID, //the format said that the file was one format the data is in another format
+    LOADER_DATA_POINTS_NOT_CLEAR, //the points or the bytes that was supposed to be the data is actually not
     OPERATION_SUCCESS,
 };
 
