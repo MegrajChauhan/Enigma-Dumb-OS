@@ -24,7 +24,6 @@ SOFTWARE.
 #define E_CPU
 
 #include "../Memory/EnigmaMemory.hpp"
-#include "EnigmaInstruction.hpp"
 #include "../OS/EnigmaOS.hpp"
 
 namespace CPU
@@ -53,7 +52,7 @@ namespace CPU
     enum Instructions : byte
     {
         NOP,
-        ADD, //for arithmetic operations
+        ADD, // for arithmetic operations
         SUB,
         MUL,
         DIV,
@@ -62,9 +61,9 @@ namespace CPU
     };
 
     qword _e_registers[REGR_COUNT];
-    static Memory main_memory; //the instruction memory[it's size can only be increased by the OS]
-    static Memory memory; //the data memory[it's size is changeable by the user]
-    static Memory IObuffer;// this is also changeable but by only the OS
+    static Memory main_memory; // the instruction memory[it's size can only be increased by the OS]
+    static Memory memory;      // the data memory[it's size is changeable by the user]
+    static Memory IObuffer;    // this is also changeable but by only the OS
 
     static qword __current_memory_input;
     static byte __current_instruction;
@@ -77,14 +76,16 @@ namespace CPU
     void decode();
 
     void execute();
+    void run();
 };
 
 void CPU::init()
 {
     // the first 256 bytes of the memory is for the stack
     _e_registers[regsp] = 0;
-    _e_registers[regpc] = 272; // 16 bytes have been reserved for any future memory mapped register
+    _e_registers[regpc] = 0b00001000000000000000000100010000; // 16 bytes have been reserved for any future memory mapped register
     // base pointer can be willingly modified for functions
+    // for those who think that that value is large, this is what it looks like in binary 0b00001000000000000000000100010000. so if we follow the order, it becomes this
 }
 
 void CPU::fetch()
@@ -96,6 +97,8 @@ void CPU::decode()
 {
     __current_instruction = (__current_memory_input >> 56);
 }
+
+#include "EnigmaInstruction.hpp"
 
 void CPU::execute()
 {
@@ -116,12 +119,24 @@ void CPU::execute()
         Div();
         break;
     case HALT:
+        std::cout << "Halt" << std::endl;
         running = false;
         break;
     default:
         std::cerr << "Unknown Instructions. Bad Instruction[Terminating Execution]" << std::endl;
         _e_registers[rega] = -1;
         running = false;
+    }
+}
+
+void CPU::run()
+{
+    while (running)
+    {
+        fetch();
+        decode();
+        execute();
+        _e_registers[regpc] += 8;
     }
 }
 

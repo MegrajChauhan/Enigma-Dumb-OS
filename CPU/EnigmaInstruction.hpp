@@ -25,7 +25,7 @@ SOFTWARE.
 
 #include "EnigmaCPU.hpp"
 
-qword Add()
+void Add()
 {
     // 0xxxxxx7 8 xxxxxxx xxxxxxxx xxxxxxxx xxxxxxxx xxxxxxxx xxxxxxxx xxxxxxxx
     // bits 0 to 7 = instruction
@@ -49,7 +49,7 @@ qword Add()
     }
 }
 
-qword Sub()
+void Sub()
 {
     // 0xxxxxx7 8 xxxxxxx xxxxxxxx xxxxxxxx xxxxxxxx xxxxxxxx xxxxxxxx xxxxxxxx
     // bits 0 to 7 = instruction
@@ -73,7 +73,7 @@ qword Sub()
     }
 }
 
-qword Mul()
+void Mul()
 {
     // 0xxxxxx7 8 xxxxxxx xxxxxxxx xxxxxxxx xxxxxxxx xxxxxxxx xxxxxxxx xxxxxxxx
     // bits 0 to 7 = instruction
@@ -97,7 +97,7 @@ qword Mul()
     }
 }
 
-qword Div()
+void Div()
 {
     // 0xxxxxx7 8 xxxxxxx xxxxxxxx xxxxxxxx xxxxxxxx xxxxxxxx xxxxxxxx xxxxxxxx
     // bits 0 to 7 = instruction

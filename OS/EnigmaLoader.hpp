@@ -26,8 +26,8 @@ SOFTWARE.
 // instead of being a loader, it actually reads the binary file,
 // of the final data to the OS[More like a manager that manages the Machine and not an OS]
 
-//since this reads a singular file and then loads the data on the file, we need a different way something like a linker
-// to merge two files into one so that this can load it successfully
+// since this reads a singular file and then loads the data on the file, we need a different way something like a linker
+//  to merge two files into one so that this can load it successfully
 #include <fstream>
 #include <filesystem>
 #include <vector>
@@ -42,18 +42,18 @@ public:
 
     void set_filename(std::string filename);
 
-    int read_and_load();
+    Signal read_and_load();
 
     std::vector<std::uint8_t> get_bytes();
     int get_data_start();
     int get_data_end();
+    Signal validate(std::string filename);
 
 private:
     std::ifstream read;
     std::vector<std::uint8_t> out;
     int data_st;
     int data_end;
-    int validate(std::string filename);
     std::string format();
     int data__addr();
 
@@ -75,7 +75,7 @@ std::vector<std::uint8_t> Loader::get_bytes()
     return out;
 }
 
-int Loader::validate(std::string filename)
+Signal Loader::validate(std::string filename)
 {
     std::filesystem::path p = std::filesystem::current_path() / filename;
     std::string ext = filename.substr(filename.length() - 5);
@@ -116,7 +116,7 @@ int Loader::data__addr()
     return std::stoi(read_line());
 }
 
-int Loader::read_and_load()
+Signal Loader::read_and_load()
 {
     // now we have to read the file. 4 bytes or 4 8 bit binary numbers are read at once
     // because the file may be either binary or decimal or hexadecimal that is the user choice or the assemblers choice
@@ -139,7 +139,6 @@ int Loader::read_and_load()
     while (!read.eof())
     {
         read.read(buff, len); // if it is binary we read 8 characters and since we do not check for spaces and the stuff
-                              // the data mustbe continous
         try
         {
             out.push_back(std::stoi(std::string{buff}, 0, base));
@@ -149,9 +148,14 @@ int Loader::read_and_load()
             delete[] buff;
             return Signal::LOADER_LOADED_FILE_FORMAT_INVALID;
         }
+        read.ignore(); // the data must have spaces between them for readability. This is mandatory.
     }
     delete[] buff;
-    if (data_st < 0 || data_st > out.size() || data_end < data_st || data_end < 0 || data_end > out.size())
+    if (data_end == -1 && data_st == -1)
+    {
+        return Signal::OPERATION_SUCCESS;
+    }
+    if (data_st > out.size() || data_end < data_st || data_end > out.size() || (data_end > -1 && data_st <= -1) || (data_end <= -1 && data_st > -1)) // if the points are -1 then we assume that there are no data at all
     {
         return Signal::LOADER_DATA_POINTS_NOT_CLEAR;
     }

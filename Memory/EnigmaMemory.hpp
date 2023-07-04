@@ -39,12 +39,12 @@ class Memory
 public:
     Memory();
 
-    int mem_resize(dword new_size);
-    int mem_add_size(dword __size_to_add);
+    Signal mem_resize(dword new_size);
+    Signal mem_add_size(dword __size_to_add);
 
     qword mem_read(dword address); // this one function should handle all 4 lengths of read
 
-    int mem_write(dword address, qword value);
+    Signal mem_write(dword address, qword value);
 
     ~Memory();
 
@@ -82,7 +82,7 @@ Memory::~Memory()
 }
 
 // if the memory size is not acceptable, this can be used to increase the size
-int Memory::mem_resize(dword new_size)
+Signal Memory::mem_resize(dword new_size)
 {
     if (new_size > __current_size)
     {
@@ -105,7 +105,7 @@ int Memory::mem_resize(dword new_size)
     return Signal::OPERATION_SUCCESS; // reallocation was successful
 }
 
-int Memory::mem_add_size(dword __size_to_add)
+Signal Memory::mem_add_size(dword __size_to_add)
 {
     // unlike mem_resize this is used to add a little bit of size to the original size of the memory pool we have
     // it uses sbrk to ask for more memory
@@ -114,6 +114,7 @@ int Memory::mem_add_size(dword __size_to_add)
     {
         return Signal::MEM_SBRK_FAILED;
     }
+    __current_size += __size_to_add;
     return Signal::OPERATION_SUCCESS;
 }
 
@@ -123,7 +124,7 @@ byte Memory::get_size(dword addr)
 {
     // since the first byte of the address are shifted and 0's are added automatically added to the begining
     //  we do not have to perform any & operation
-    return (addr >> 24);
+    return (addr >> 24) & 255;
 }
 
 // this function will be used to get the actual address from addr removing the size
@@ -143,6 +144,7 @@ qword Memory::mem_read(dword address)
     }
     if (s != 1 && s != 2 && s != 4 && s != 8)
     {
+        std::cout<<s<<std::endl;
         return Signal::MEM_INVALID_SIZE;
     }
     switch (s)
@@ -153,24 +155,24 @@ qword Memory::mem_read(dword address)
     {
         // now we need to read two bytes and send it as one
         res = memory[i];                  // first get the first byte specified by the address
-        res = (res << 8) & memory[i + 1]; // now ge the next byte and add it to the end of res
+        res = (res << 8) | memory[i + 1]; // now ge the next byte and add it to the end of res
         break;
     }
     case 4:
     {
         // read 4 bytes just like reading 2 bytes
-        for (int x = 0; i < 4; i++)
+        for (int x = 0; x < 4; x++)
         {
-            res = (res << (x * 8)) & memory[i + x];
+            res = (res << 8) | memory[i + x];
         }
         break;
     }
     case 8:
     {
         // same as reading 4 bytes but this time we read 8 bytes
-        for (int x = 0; i < 8; i++)
+        for (int x = 0; x < 8; x++)
         {
-            res = (res << (x * 8)) & memory[i + x];
+            res = (res << 8) | memory[i + x];
         }
         break;
     }
@@ -181,7 +183,7 @@ qword Memory::mem_read(dword address)
 // this function will write value to address
 // if there are errors, signals will be sent
 // here too, the format must be followed of addressing
-int Memory::mem_write(dword address, qword value)
+Signal Memory::mem_write(dword address, qword value)
 {
     auto s = get_size(address);
     auto i = get_addr(address);
@@ -208,18 +210,22 @@ int Memory::mem_write(dword address, qword value)
     case 4:
     {
         // now loop and write
-        for (int x = 0; i < 4; i++)
+        int c = 0;
+        for (int x = 3; x >= 0; x--)
         {
-            memory[i + x] = (value >> (x * 8)) & 255;
+            memory[i + c] = (value >> (x * 8)) & 255;
+            c++;
         }
         break;
     }
     case 8:
     {
         //same as 4 bytes but loop 8 times
-        for (int x = 0; i < 8; i++)
+        int c = 0;
+        for (int x = 7; x >= 0; x--)
         {
-            memory[i + x] = (value >> (x * 8)) & 255;
+            memory[i + c] = (value >> (x * 8)) & 255;
+            c++;
         }
         break;
     }

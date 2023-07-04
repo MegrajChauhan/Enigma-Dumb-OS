@@ -23,6 +23,8 @@ SOFTWARE.
 #ifndef E_SIGNALS
 #define E_SIGNALS
 
+#include <string>
+
 //this module defines the signals that the different components can transfer between themselves
 enum Signal
 {
@@ -41,5 +43,36 @@ enum Signal
     LOADER_DATA_POINTS_NOT_CLEAR, //the points or the bytes that was supposed to be the data is actually not
     OPERATION_SUCCESS,
 };
+
+std::string signal_to_string(Signal sig)
+{
+   //just return a stringified version of the signal
+   switch(sig)
+   {
+    case MEM_ADDRESS_OUT_OF_BOUNDS:
+      return "Requested memory address is out of bounds";
+    case MEM_INVALID_SIZE:
+      return "The requested number of bytes to read is invalid.";
+    case MEM_REALLOC_FAILED:
+      return "Memory size increment failed";
+    case MEM_REQUEST_INVALID:
+      return "Requested memory size increment is larger than available memory";
+    case MEM_SBRK_FAILED:
+      return "Request to increase memory pool failed.";
+    case LOADER_DATA_POINTS_NOT_CLEAR:
+      return "Data points of the data bytes start and end is not clear";
+    case LOADER_FILE_A_DIRECTORY:
+      return "Requested file is not a file but a directory instead";
+    case LOADER_FILE_FORMAT_INVALID:
+      return "File can only be in either binary, decimal or hexadecimal format";
+    case LOADER_FILE_NOT_EXISTS:
+      return "Input file doesn't exists in the working directory";
+    case LOADER_INVALID_BIN_FILE:
+      return "Input file is not in supported format";
+    case LOADER_LOADED_FILE_FORMAT_INVALID:
+      return "Data format and Header specified format mismatch";
+   }
+   return "Operation Success";
+}
 
 #endif
