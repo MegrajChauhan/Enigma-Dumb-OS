@@ -124,7 +124,7 @@ byte Memory::get_size(dword addr)
 {
     // since the first byte of the address are shifted and 0's are added automatically added to the begining
     //  we do not have to perform any & operation
-    return (addr >> 24) & 255;
+    return (addr >> 24);
 }
 
 // this function will be used to get the actual address from addr removing the size

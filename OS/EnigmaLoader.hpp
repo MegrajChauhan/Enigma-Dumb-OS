@@ -28,6 +28,11 @@ SOFTWARE.
 
 // since this reads a singular file and then loads the data on the file, we need a different way something like a linker
 //  to merge two files into one so that this can load it successfully
+
+// The thing that the user of this component must make sure of is that, the headers are compulsory if you do not
+// want to destroy your real PC since the random bit of data that was read could actually corrupt your system
+// Since there are no[a little] protection measures in place, please be careful
+// currently there aren't many headers but in the future, we might add some more headers for more metadata purposes
 #include <fstream>
 #include <filesystem>
 #include <vector>
@@ -58,6 +63,10 @@ private:
     int data__addr();
 
     std::string read_line();
+
+    Signal read_hexadecimal();
+    Signal read_decimal();
+    Signal read_binary();
 };
 
 int Loader::get_data_end()
@@ -116,6 +125,82 @@ int Loader::data__addr()
     return std::stoi(read_line());
 }
 
+Signal Loader::read_hexadecimal()
+{
+    // 4 characters can represent all that there is or 0x00 in hex
+    char *buff = new char[4];
+    while (!read.eof())
+    {
+        read.read(buff, 4); // if it is binary we read 8 characters and since we do not check for spaces and the stuff
+        try
+        {
+            out.push_back(std::stoi(std::string{buff}, 0, 16));
+        }
+        catch (const std::invalid_argument &arg)
+        {
+            delete[] buff;
+            return Signal::LOADER_LOADED_FILE_FORMAT_INVALID;
+        }
+        if (read.peek() == (int)' ') // the data can have spaces between them for readability. This USED to be mandatory and now it's not!
+        {
+            read.ignore();
+        }
+    }
+    delete[] buff;
+    return Signal::OPERATION_SUCCESS;
+}
+
+Signal Loader::read_binary()
+{
+    char *buff = new char[8];
+    while (!read.eof())
+    {
+        read.read(buff, 8); // if it is binary we read 8 characters and since we do not check for spaces and the stuff
+        try
+        {
+            out.push_back(std::stoi(std::string{buff}, 0, 2));
+        }
+        catch (const std::invalid_argument &arg)
+        {
+            delete[] buff;
+            return Signal::LOADER_LOADED_FILE_FORMAT_INVALID;
+        }
+        if (read.peek() == (int)' ') // the data can have spaces between them for readability. This USED to be mandatory and now it's not!
+        {
+            read.ignore();
+        }
+    }
+    delete[] buff;
+    return Signal::OPERATION_SUCCESS;
+}
+
+Signal Loader::read_decimal()
+{
+    // decimal is a bit of a pain. Mostly the instructions are 2 numbers long but there are some that are 3 numbers long
+    char *buff = new char[3];
+    int i = 0;
+    while (!read.eof())
+    {
+        // since decimals might have 3 numbers, we now read 3 numbers at once
+        read.read(buff, 3);
+        try
+        {
+            out.push_back(std::stoi(std::string{buff}, 0, 10));
+        }
+        catch (const std::invalid_argument &arg)
+        {
+            delete[] buff;
+            return Signal::LOADER_LOADED_FILE_FORMAT_INVALID;
+        }
+        if (read.peek() == (int)' ') // the data can have spaces between them for readability. This USED to be mandatory and now it's not!
+        {
+            read.ignore();
+        }
+    }
+    // even if the number is more than 255[which is invalid], the way that the numbers are stored in the memory that is prevented
+    return Signal::OPERATION_SUCCESS;
+}
+
 Signal Loader::read_and_load()
 {
     // now we have to read the file. 4 bytes or 4 8 bit binary numbers are read at once
@@ -131,26 +216,8 @@ Signal Loader::read_and_load()
     {
         return Signal::LOADER_FILE_FORMAT_INVALID;
     }
-    int base = (__format == "decimal") ? 10 : (__format == "hexadecimal") ? 16
-                                                                          : 2;
-    int len = (__format == "decimal") ? 2 : (__format == "hexadecimal") ? 4
-                                                                        : 8;
-    char *buff = new char[len];
-    while (!read.eof())
-    {
-        read.read(buff, len); // if it is binary we read 8 characters and since we do not check for spaces and the stuff
-        try
-        {
-            out.push_back(std::stoi(std::string{buff}, 0, base));
-        }
-        catch (const std::invalid_argument &arg)
-        {
-            delete[] buff;
-            return Signal::LOADER_LOADED_FILE_FORMAT_INVALID;
-        }
-        read.ignore(); // the data must have spaces between them for readability. This is mandatory.
-    }
-    delete[] buff;
+    Signal sig = (__format == "decimal") ? read_decimal() : (__format == "hexadecimal") ? read_hexadecimal()
+                                                                                        : read_binary();
     if (data_end == -1 && data_st == -1)
     {
         return Signal::OPERATION_SUCCESS;
@@ -159,7 +226,7 @@ Signal Loader::read_and_load()
     {
         return Signal::LOADER_DATA_POINTS_NOT_CLEAR;
     }
-    return Signal::OPERATION_SUCCESS;
+    return sig;
 }
 
 #endif

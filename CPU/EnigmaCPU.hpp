@@ -313,6 +313,7 @@ void CPU::run()
         execute();
         _e_registers[regpc] += 8;
     }
+    std::cout<<_e_registers[regf]<<std::endl;
 }
 
 #endif
