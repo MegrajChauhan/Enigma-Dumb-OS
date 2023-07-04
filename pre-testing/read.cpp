@@ -6,4 +6,5 @@ int main()
     // loader.set_filename("test.enib");
     // loader.read_and_load();
     std::cout<<std::stoi("-1")<<std::endl;
+    std::cout<<std::stoi("0x0F", 0, 16)<<std::endl;
 }

@@ -93,18 +93,18 @@ void Manager::LoadToMemory()
         {
             if ((data_point_end - i) > 1024)
             {
-                auto rets = CPU::memory.mem_resize(1024 + (data_point_end - i)); // since we have spare 128 bytes
+                auto rets = CPU::memory.mem_resize(1024 + (data_point_end - i) + 64); // since we have spare 128 bytes
                 if (rets != Signal::OPERATION_SUCCESS)
                 {
                     // failed miserably[could be either realloc failed or the pool wasn't big enough]
-                    rets = CPU::memory.mem_add_size((data_point_end - i)); // increase the pool
+                    rets = CPU::memory.mem_add_size((data_point_end - i + 64)); // increase the pool
                     if (rets != Signal::OPERATION_SUCCESS)
                     {
                         // we did what we could
                         std::cerr << "Internal Error: Memory allocation failed" << std::endl;
                         exit(-1);
                     }
-                    rets = CPU::memory.mem_resize(1024 + (data_point_end - i)); // try once again
+                    rets = CPU::memory.mem_resize(1024 + (data_point_end - i) + 64); // try once again[getting some extra in case we might need it]
                     if (rets != Signal::OPERATION_SUCCESS)
                     {
                         // we did what we could :(
@@ -114,7 +114,7 @@ void Manager::LoadToMemory()
                 }
                 // pool was increased or the realloc passed
             }
-            dword addr = 0b00000001000000000000000000000000;//100010000
+            dword addr = 0b00000001000000000000000000000000;
             while (i != data_point_end + 1)
             {
                 // now we are ready to start pushing the data which starts from 0x0 address

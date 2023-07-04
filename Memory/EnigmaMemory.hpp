@@ -144,7 +144,6 @@ qword Memory::mem_read(dword address)
     }
     if (s != 1 && s != 2 && s != 4 && s != 8)
     {
-        std::cout<<s<<std::endl;
         return Signal::MEM_INVALID_SIZE;
     }
     switch (s)

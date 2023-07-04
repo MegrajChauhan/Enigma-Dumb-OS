@@ -133,7 +133,7 @@ Signal Loader::read_and_load()
     }
     int base = (__format == "decimal") ? 10 : (__format == "hexadecimal") ? 16
                                                                           : 2;
-    int len = (__format == "decimal") ? 2 : (__format == "hexadecimal") ? 2
+    int len = (__format == "decimal") ? 2 : (__format == "hexadecimal") ? 4
                                                                         : 8;
     char *buff = new char[len];
     while (!read.eof())
