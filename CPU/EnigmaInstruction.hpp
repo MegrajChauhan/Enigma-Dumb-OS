@@ -253,6 +253,17 @@ void Div()
     }
 }
 
+void Inc()
+{
+   //this only takes registers as operand
+   CPU::_e_registers[CPU::__current_memory_input & 15]++; //this is it
+}
+
+void Dec()
+{
+    CPU::_e_registers[CPU::__current_memory_input & 15]--;
+}
+
 void And()
 {
     // 0xxxxxx7 8 xxxxxxx xxxxxxxx xxxxxxxx xxxxxxxx xxxxxxxx xxxxxxxx xxxxxxxx
@@ -411,8 +422,8 @@ void Mov()
     }
     case 1:
     {
-        // 0xxxxxx7 8 src = [xxxxxxx xxxxxxxx xxxxxxxx xxxxxxxx xxxxxxxx xxxxxxxx xxxx] dest = [xxxx]
-        CPU::_e_registers[CPU::__current_memory_input & 15] = (CPU::__current_memory_input)&0x7FFFFFFFFFFFF;
+        // 0xxxxxx7 8 src = [xxxxxxx xxxxxxxx xxxxxxxx xxxxxxxx xxxxxxxx xxxxxxxx] xxxx dest = [xxxx]
+        CPU::_e_registers[CPU::__current_memory_input & 15] = (CPU::__current_memory_input >> 8) & 0x7FFFFFFFFFFF;
         break;
     }
     }

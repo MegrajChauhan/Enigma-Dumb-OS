@@ -57,10 +57,8 @@ public:
 private:
     std::ifstream read;
     std::vector<std::uint8_t> out;
-    std::vector<char> __buffer;
     int data_st;
     int data_end;
-
     std::string format();
     int data__addr();
 
@@ -180,14 +178,10 @@ Signal Loader::read_decimal()
 {
     // decimal is a bit of a pain. Mostly the instructions are 2 numbers long but there are some that are 3 numbers long
     char *buff = new char[3];
-    int c = 0;
-    while (c < __buffer.size())
+    while (!read.eof())
     {
         // since decimals might have 3 numbers, we now read 3 numbers at once
-        for(int i = 0; i < 3; i++, c++)
-        {
-           buff[i] = __buffer[c];
-        }
+        read.read(buff, 3);
         try
         {
             out.push_back(std::stoi(std::string{buff}, 0, 10));
@@ -197,9 +191,9 @@ Signal Loader::read_decimal()
             delete[] buff;
             return Signal::LOADER_LOADED_FILE_FORMAT_INVALID;
         }
-        if (__buffer[c] == (int)' ' || __buffer[c] == (int)'\n') // the data can have spaces between them for readability. This USED to be mandatory and now it's not!
+        if (read.peek() == (int)' ' || read.peek() == (int)'\n') // the data can have spaces between them for readability. This USED to be mandatory and now it's not!
         {
-            c++;
+            read.ignore();
         }
     }
     // even if the number is more than 255[which is invalid], the way that the numbers are stored in the memory that is prevented
@@ -221,8 +215,6 @@ Signal Loader::read_and_load()
     {
         return Signal::LOADER_FILE_FORMAT_INVALID;
     }
-    std::vector<char> buffer{std::istreambuf_iterator<char>(read), std::istreambuf_iterator<char>()};
-    __buffer = buffer;
     Signal sig = (__format == "decimal") ? read_decimal() : (__format == "hexadecimal") ? read_hexadecimal()
                                                                                         : read_binary();
     if (data_end == -1 && data_st == -1)

@@ -66,6 +66,8 @@ namespace CPU
         SUB,
         MUL,
         DIV,
+        INC,
+        DEC,
         AND, // logical operations
         OR,
         NOT,
@@ -143,7 +145,7 @@ void CPU::init()
 
 void CPU::fetch()
 {
-    __current_memory_input = main_memory.mem_read(_e_registers[regpc]);
+    __current_memory_input = main_memory.mem_read64(_e_registers[regpc]);
 }
 
 void CPU::decode()
@@ -170,6 +172,12 @@ void CPU::execute()
         break;
     case DIV:
         Div();
+        break;
+    case INC:
+        Inc();
+        break;
+    case DEC:
+        Dec();
         break;
     case AND:
         And();
@@ -302,10 +310,10 @@ void CPU::run()
 {
     while (running)
     {
-        if(signal)
+        if (signal)
         {
-            std::cerr<<"Error: "<<signal_to_string(sig)<<std::endl;
-            std::cout<<"Terminating execution"<<std::endl;
+            std::cerr << "Error: " << signal_to_string(sig) << std::endl;
+            std::cout << "Terminating execution" << std::endl;
             exit(-1);
         }
         fetch();
@@ -313,7 +321,6 @@ void CPU::run()
         execute();
         _e_registers[regpc] += 8;
     }
-    std::cout<<_e_registers[regf]<<std::endl;
 }
 
 #endif

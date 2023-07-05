@@ -46,6 +46,8 @@ public:
 
     Signal mem_write(dword address, qword value);
 
+    qword mem_read64(dword address); // special function for only the CPU
+
     ~Memory();
 
 private:
@@ -110,7 +112,7 @@ Signal Memory::mem_add_size(dword __size_to_add)
     // unlike mem_resize this is used to add a little bit of size to the original size of the memory pool we have
     // it uses sbrk to ask for more memory
     auto x = sbrk(__size_to_add);
-    if(x == (void*)-1)
+    if (x == (void *)-1)
     {
         return Signal::MEM_SBRK_FAILED;
     }
@@ -179,6 +181,17 @@ qword Memory::mem_read(dword address)
     return res;
 }
 
+qword Memory::mem_read64(dword address)
+{
+    qword res;
+    auto i = get_addr(address);
+    for (int x = 0; x < 8; x++)
+    {
+        res = (res << 8) | memory[i + x];
+    }
+    return res;
+}
+
 // this function will write value to address
 // if there are errors, signals will be sent
 // here too, the format must be followed of addressing
@@ -219,7 +232,7 @@ Signal Memory::mem_write(dword address, qword value)
     }
     case 8:
     {
-        //same as 4 bytes but loop 8 times
+        // same as 4 bytes but loop 8 times
         int c = 0;
         for (int x = 7; x >= 0; x--)
         {
